@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxd.termsys.dao.ITransportationDao">
+
+    <!--  获取全部交通工具  List<Transportation> getAllTransportation();-->
+    <select id="getAllTransportation" resultType="Transportation">
+        select trno,trname from transportation
+    </select>
+
+    <!--  增加交通工具   boolean addTransportation(Transportation transportation);-->
+    <insert id="addTransportation">
+        insert into transportation (trname)
+        values (#{trname})
+    </insert>
+
+    <!--  批量删除交通工具   boolean delTransportation(List<Integer> trnos);-->
+    <delete id="delTransportation">
+        delete from transportation where trno in
+        <foreach collection="list" item="trno" separator="," open="(" close=")">
+            #{trno}
+        </foreach>
+    </delete>
+
+    <!-- 修改交通工具   boolean editTransportation(Transportation transportation);-->
+    <update id="editTransportation">
+        update transportation set trname = #{trname}
+        where trno = #{trno}
+    </update>
+
+    <!--  通过 trno 查询交通工具   Transportation selectByTrno(int trno);-->
+    <select id="selectByTrno" resultType="Transportation">
+        select trno,trname from transportation where trno = #{trno}
+    </select>
+</mapper>

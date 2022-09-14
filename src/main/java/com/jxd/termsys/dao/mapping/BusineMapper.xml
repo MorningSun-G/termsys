@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxd.termsys.dao.IBusinessDao">
+
+    <!--  新增差旅信息   boolean addBusiness(Business business);-->
+    <insert id="addBusiness">
+        insert into business (empno,leavetime,arrivetime,bdate,explanation,btime,allowance,rmbtotal,bstate)
+        values (#{empno},#{leavetime},#{arrivetime},#{bdate},#{explanation},#{btime},#{allowance},#{rmbtotal},#{bstate})
+    </insert>
+
+    <!-- 批量删除差旅信息   boolean delBusiness(List<Integer> bnos);-->
+    <delete id="delBusiness">
+        delete from business where bno in
+        <foreach collection="list" item="bno" separator="," open="(" close=")">
+            #{bno}
+        </foreach>
+    </delete>
+
+    <!--  修改差旅信息   boolean editBusiness(Business business);-->
+    <update id="editBusiness">
+        update business set leavetime = #{leavetime},arrivetime = #{arrivetime},bdate = #{bdate},explanation = #{explanation},btime = #{btime}, allowance= #{allowance},rmbtotal = #{rmbtotal}, bstate= #{bstate}
+        where bno = #{bno}
+    </update>
+
+    <!-- 根据 bnos 批量修改bstate    boolean editBstateByBnos(List<Integer> bnos,int bstate);-->
+    <update id="editBstateByBnos">
+        <foreach collection="bnos" item="bno" separator=";">
+            update business set bstate = #{bstate} where bno = #{bno}
+        </foreach>
+    </update>
+
+    <!--  分页查询总数据   List<Business> selectByTime(int bno, String begintime, String endtime,int empno);-->
+    <select id="selectByTime" resultType="Business">
+        select bno,empno,leavetime,arrivetime,bdate,explanation,btime,allowance,rmbtotal,bstate
+        from business
+        <where>
+            <if test="empno != -1">
+                empno = #{empno}
+            </if>
+            <if test="bno != 0">
+                and bno = #{bno}
+            </if>
+            <if test="begintime != null and begintime != ''">
+                and btime &gt;= #{begintime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and btime &lt;= #{endtime}
+            </if>
+        </where>
+    </select>
+
+    <!--   分页查询  List<Business> selectByPage(int count, int pageSize, int bno, String begintime, String endtime,int empno);-->
+    <select id="selectByPage" resultType="Business">
+        select bno,empno,leavetime,arrivetime,bdate,explanation,btime,allowance,rmbtotal,bstate
+        from business
+        <where>
+            <if test="empno != -1">
+                empno = #{empno}
+            </if>
+            <if test="bno != 0">
+                and bno = #{bno}
+            </if>
+            <if test="begintime != null and begintime != ''">
+                and btime &gt;= #{begintime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and btime &lt;= #{endtime}
+            </if>
+        </where>
+        order by bno desc
+        limit #{count},#{pageSize}
+    </select>
+
+    <!--  领导审批business   List<Business> selectBusinessLeader(String begintime,String endtime,deptno);-->
+    <select id="selectBusinessLeader" resultType="Business">
+        select b.bno,e.empno,e.ename,b.leavetime,b.arrivetime,b.bdate,b.explanation,b.btime,b.allowance,b.rmbtotal,b.bstate
+        from business b inner join emp e
+        on b.empno = e.empno and e.deptno = #{deptno}
+        <where>
+            <if test="true">
+                b.bstate in (2,4)
+            </if>
+            <if test="begintime != null and begintime != ''">
+                and b.btime &gt;= #{begintime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and b.btime &lt;= #{endtime}
+            </if>
+        </where>
+        order by b.bno desc
+    </select>
+
+    <!--  财务审批business   List<Business> selectBusinessFinance(String begintime,String endtime,);-->
+    <select id="selectBusinessFinance" resultType="Business">
+        select b.bno,e.empno,e.ename,b.leavetime,b.arrivetime,b.bdate,b.explanation,b.btime,b.allowance,b.rmbtotal,b.bstate
+        from business b inner join emp e
+        on b.empno = e.empno and deptno = #{deptno}
+        <where>
+            <if test="true">
+                b.bstate = 3
+            </if>
+            <if test="begintime != null and begintime != ''">
+                and b.btime &gt;= #{begintime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and b.btime &lt;= #{endtime}
+            </if>
+        </where>
+        order by b.bno desc
+    </select>
+
+
+    <!--  根据 编号 查询差旅信息    Business selectBusinessByBno(int bno);-->
+    <select id="selectBusinessByBno" resultType="Business">
+        select bno,empno,leavetime,arrivetime,bdate,explanation,btime,allowance,rmbtotal,bstate
+        from business
+        where bno = #{bno}
+    </select>
+
+    <!--   查询最新插入的一条数据   Business selectPreviousBusiness();-->
+    <select id="selectPreviousBusiness" resultType="Business">
+        select bno,empno,leavetime,arrivetime,bdate,explanation,btime,allowance,rmbtotal,bstate
+        from business
+        where bno = (select max(bno) from business)
+    </select>
+
+</mapper>

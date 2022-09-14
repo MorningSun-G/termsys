@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxd.termsys.dao.ITicketDao">
+
+    <!--  新增车票 boolean addTicket(Ticket ticket); -->
+    <insert id="addTicket">
+        insert into ticket (empno,ttype,leaveplace,arriveplace,leavetime,arrivetime,trno,tprice,tphoto,explanation,bno)
+        values (#{empno},#{ttype},#{leaveplace},#{arriveplace},#{leavetime},#{arrivetime},#{trno},#{tprice},#{tphoto},#{explanation},#{bno})
+    </insert>
+
+    <!--  批量删除车票   boolean delTicket(List<Integer> tnos);-->
+    <delete id="delTicket">
+        delete from ticket where tno in
+        <foreach collection="list" item="tno" separator="," open="(" close=")">
+            #{tno}
+        </foreach>
+    </delete>
+
+    <!--  修改车票信息   boolean editTicket(Ticket ticket);-->
+    <update id="editTicket">
+        update ticket set leavetime = #{leavetime},arrivetime = #{arrivetime},trno = #{trno},tprice =#{tprice},tphoto = #{tphoto},explanation=#{explanation}
+        where tno = #{tno}
+    </update>
+
+    <!-- 根据车票编号批量设置关联差旅信息    boolean editTicketBno(List<Integer> tnos,Integer bno);-->
+    <update id="editTicketBno">
+        update ticket set bno = #{bno} where tno in
+        <foreach collection="tnos" item="tno" separator="," open="(" close=")">
+            #{tno}
+        </foreach>
+    </update>
+
+    <!--   根据tno 批量修改explanation  boolean editTicketExplanation(List<Integer> tnos,String explanation);-->
+    <update id="editTicketExplanation">
+        update ticket set explanation = #{explanation} where tno in
+        <foreach collection="tnos" item="tno" separator="," open="(" close=")">
+            #{tno}
+        </foreach>
+    </update>
+
+
+    <!--  根据出发时间  出发地点和到达地点查询车票      List<Ticket> selectBytime(String leavetime,String leaveplace,String arriveplace,int empno);-->
+    <select id="selectBytime" resultType="Ticket">
+        select t.tno,t.empno,t.ttype,t.leaveplace,t.arriveplace,t.leavetime,t.arrivetime,t.trno,t.tprice,t.tphoto,t.explanation,t.bno,tr.trname from
+        ticket t left join transportation tr
+        on t.trno = tr.trno
+        <where>
+            <if test="empno != -1">
+                t.empno = #{empno}
+            </if>
+            <if test="leavetime != null and leavetime != ''">
+                and t.leavetime &gt;= #{leavetime}
+            </if>
+            <if test="leaveplace != null and leaveplace != ''">
+                and t.leaveplace = #{leaveplace}
+            </if>
+            <if test="arriveplace != null and arriveplace != ''">
+                and t.arriveplace = #{arriveplace}
+            </if>
+        </where>
+    </select>
+
+    <!--  分页查询    List<Ticket> selectByPage(int count,int pageSize,String leavetime,String leaveplace,String arriveplace,int empno);-->
+    <select id="selectByPage" resultType="Ticket">
+        select t.tno,t.empno,t.ttype,t.leaveplace,t.arriveplace,t.leavetime,t.arrivetime,t.trno,t.tprice,t.tphoto,t.explanation,t.bno,tr.trname from
+        ticket t left join transportation tr
+        on t.trno = tr.trno
+        <where>
+            <if test="empno != -1">
+                t.empno = #{empno}
+            </if>
+            <if test="leavetime != null and leavetime != ''">
+                and t.leavetime &gt;= #{leavetime}
+            </if>
+            <if test="leaveplace != null and leaveplace != ''">
+                and t.leaveplace = #{leaveplace}
+            </if>
+            <if test="arriveplace != null and arriveplace != ''">
+                and t.arriveplace = #{arriveplace}
+            </if>
+        </where>
+        order by tno desc
+        limit #{count},#{pageSize}
+    </select>
+
+    <!--  根据车票编号查询车票   Ticket selectTicketByTno(int tno);-->
+    <select id="selectTicketByTno" resultType="Ticket">
+        select tno,empno,ttype,leaveplace,arriveplace,leavetime,arrivetime,trno,tprice,tphoto,explanation,bno
+        from ticket
+        where tno = #{tno}
+    </select>
+
+    <!--  根据员工编号查询最新插入的一条数据（tno最大的）   Ticket selectPreviousTicket(int empno);-->
+    <select id="selectPreviousTicket" resultType="Ticket">
+        select tno,empno,ttype,leaveplace,arriveplace,leavetime,arrivetime,trno,tprice,tphoto,explanation,bno
+        from ticket
+        where tno = (select max(tno) from ticket where empno = #{empno})
+    </select>
+
+    <!--   查询未关联差旅信息的车票  List<Ticket> selectTicketBybnoIsNull(int empno);-->
+    <select id="selectTicketBybnoIsNull" resultType="Ticket">
+        select t.tno,t.empno,t.ttype,t.leaveplace,t.arriveplace,t.leavetime,t.arrivetime,t.trno,t.tprice,t.tphoto,t.explanation,t.bno,tr.trname
+        from ticket t left join transportation tr
+        on t.trno = tr.trno
+        where empno = #{empno} and bno is null
+    </select>
+
+    <!--   通过差旅信息编号  找到这条差旅信息关联的车票编号  List<Integer> selectTnoByBno(int bno);-->
+    <select id="selectTnoByBno" resultType="Ticket">
+        select t.tno,t.empno,t.ttype,t.leaveplace,t.arriveplace,t.leavetime,t.arrivetime,t.trno,t.tprice,t.tphoto,t.explanation,t.bno,tr.trname
+        from ticket t left join transportation tr
+        on t.trno = tr.trno
+        where bno = #{bno}
+    </select>
+
+    <!--  根据tnos 查找 tphotos   List<String> selectTphotoByTno(List<Integer> tnos);-->
+    <select id="selectTphotoByTno" resultType="String">
+        select tphoto from ticket where tno in
+        <foreach collection="list" item="tno" separator="," open="(" close=")">
+            #{tno}
+        </foreach>
+    </select>
+
+</mapper>

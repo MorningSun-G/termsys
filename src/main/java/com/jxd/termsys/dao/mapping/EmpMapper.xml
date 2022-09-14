@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--mapper文件替代原先的dao层实现类-->
+<!--namespace对应的是接口的全路径名称-->
+<mapper namespace="com.jxd.termsys.dao.IEmpDao">
+
+    <!-- 新增员工  boolean addEmp(Emp emp);  -->
+    <insert id="addEmp">
+        insert into emp (empno,ename,epwd,esex,etel,deptno,eid)
+         values (#{empno},#{ename},#{epwd},#{esex},#{etel},#{deptno},#{eid})
+    </insert>
+
+    <!--  批量删除员工  boolean delEmp(int[] empnos);-->
+    <delete id="delEmp">
+        delete from emp where empno in
+        <foreach collection="list" item="empno" separator="," open="(" close=")">
+            #{empno}
+        </foreach>
+    </delete>
+    <!-- 修改员工信息     boolean editEmp(Emp emp); -->
+    <update id="editEmp">
+        update emp set ename = #{ename},epwd = #{epwd},esex = #{esex},etel =#{etel},deptno = #{deptno},eid = #{eid}
+        where empno = #{empno}
+    </update>
+
+    <!-- 分页按名字部门查找  List<Emp> selectByPage(int count,int pageSize,String ename,Integer deptno);-->
+    <select id="selectByPage" resultType="Emp">
+        select e.empno,e.ename,e.epwd,e.esex,e.etel,e.deptno,e.eid,d.dname from emp e
+        left join dept d
+        on e.deptno = d.deptno
+        <where>
+            <if test="ename != '' and ename != null">
+                e.ename like '%' #{ename} '%'
+            </if>
+            <if test="deptno != null">
+                and e.deptno = #{deptno}
+            </if>
+        </where>
+        limit #{count},#{pageSize}
+    </select>
+
+    <!--  按名字部门模糊查询 获得数据总条数    List<Emp> selectByEname(String ename,Integer deptno);-->
+    <select id="selectByEname" resultType="Emp">
+        select e.empno,e.ename,e.epwd,e.esex,e.etel,e.deptno,e.eid,d.dname from emp e
+        left join dept d
+        on e.deptno = d.deptno
+        <where>
+            <if test="ename != '' and ename != null">
+                e.ename like '%' #{ename} '%'
+            </if>
+            <if test="deptno != null">
+                and e.deptno = #{deptno}
+            </if>
+        </where>
+    </select>
+
+    <!--   登录验证用户名和密码 Emp selectEnameAndEpwd(String ename,String epwd); -->
+    <select id="selectEnameAndEpwd" resultType="Emp">
+        select e.empno,e.deptno,e.eid,d.dname from emp e
+        left join dept d
+        on e.deptno = d.deptno
+        where ename = #{ename} and epwd = #{epwd}
+    </select>
+
+    <!--  根据员工编号查找员工   Emp selectEmpByEmpno(int empno);-->
+    <select id="selectEmpByEmpno" resultType="Emp">
+        select empno,ename,epwd,esex,etel,deptno,eid from emp
+        where empno = #{empno}
+    </select>
+
+    <!--  根据员工姓名查找是否已经存在  Emp selectEmpByEname(String ename);-->
+    <select id="selectEmpByEname" resultType="Emp">
+        select empno,ename from emp
+        where ename = #{ename}
+    </select>
+
+    <!--  根据 部门编号查询是否已经有部门经理   Emp selectEidByDeptno(Integer deptno);-->
+    <select id="selectEidByDeptno" resultType="Emp">
+        select empno,ename,epwd,esex,etel,deptno,eid from emp
+        where deptno = #{deptno} and eid = 2
+    </select>
+
+</mapper>

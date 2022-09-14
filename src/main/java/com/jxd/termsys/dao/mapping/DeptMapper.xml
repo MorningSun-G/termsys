@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxd.termsys.dao.IDeptDao">
+
+    <!--  获取全部职位   List<Dept> getAllDept();-->
+    <select id="getAllDept" resultType="Dept">
+        select deptno,dname from dept
+    </select>
+
+    <!--  增加职位   boolean addDept(Dept dept);-->
+    <insert id="addDept">
+        insert into dept (dname)
+        values (#{dname})
+    </insert>
+
+    <!--  批量删除职位   boolean delDept(List<Integer> deptnos);-->
+    <delete id="delDept">
+        delete from dept where deptno in
+        <foreach collection="list" item="deptno" separator="," open="(" close=")">
+            #{deptno}
+        </foreach>
+    </delete>
+
+    <!--  修改职位   boolean editDept(Dept dept);-->
+    <update id="editDept">
+        update dept set dname = #{dname}
+        where deptno = #{deptno}
+    </update>
+
+    <!--   通过 编号 查找职位  Dept selectDeptBydeptno(int deptno);-->
+    <select id="selectDeptBydeptno" resultType="Dept">
+        select deptno,dname from dept where deptno = #{deptno}
+    </select>
+</mapper>

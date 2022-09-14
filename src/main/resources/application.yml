@@ -1,0 +1,25 @@
+#修改tomcat端口为8086
+server:
+  port: 8086
+
+#数据源信息
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mysql08?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=UTC&allowMultiQueries=true
+    username: root
+    password: root
+
+mybatis:
+  #映射文件位置
+  mapper-locations: classpath:com/jxd/termsys/dao/mapping/*.xml
+  #别名设置，在映射文件中只需要写实体类的名称即可（不需要写全限定名称了）
+  type-aliases-package: com.jxd.termsys.model
+  #驼峰映射，比如实体类user的属性名userName 和 数据库中的user表中的字段user_name 对应
+  configuration:
+    map-underscore-to-camel-case: true
+
+#在控制台查看sql语句
+logging:
+  level:
+    com.jxd.dao: DEBUG
